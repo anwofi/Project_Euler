@@ -1,0 +1,137 @@
+#! /usr/bin/python
+# -*- coding: utf-8 -*- 
+
+from itertools import chain
+
+
+def gcd(aa, bb):
+    """
+    Gives the gcd of aa and bb.
+    """
+    if min(aa, bb) == 0:
+        out = max(aa, bb) 
+    else:
+        out = gcd(min(aa, bb), max(aa, bb) % min(aa, bb))
+    return(out)
+
+def gcf(aa, bb):
+    """
+    Gives the greatest common factor of aa and bb.
+    """
+    return(int(aa * bb / gcd(aa, bb)))
+
+def primes(n):
+    if n<=2:
+        return []
+    sieve=[True]*(n+1)
+    for x in range(3,int(n**0.5)+1,2):
+        for y in range(3,(n//x)+1,2):
+            sieve[(x*y)]=False
+
+    return [2]+[i for i in range(3,n,2) if sieve[i]]
+
+def factors(n):
+    result = []
+    # test 2 and all of the odd numbers
+    # xrange instead of range avoids constructing the list
+    for i in chain([2],xrange(3,n+1,2)):
+        s = 0
+        while n%i == 0:  #a good place for mod
+            n /= i
+            s += 1
+        result.extend([i]*s) #avoid another for loop
+        if n==1:
+            return result
+        if isprime(n,100):
+            return result+[n]  
+
+import random
+
+def brent(N):
+        if N%2==0:
+                return 2
+        y,c,m = random.randint(1, N-1),random.randint(1, N-1),random.randint(1, N-1)
+        g,r,q = 1,1,1
+        while g==1:            
+                x = y
+                for i in xrange(r):
+                        y = ((y*y)%N+c)%N
+                k = 0
+                while (k<r and g==1):
+                        ys = y
+                        for i in xrange(min(m,r-k)):
+                                y = ((y*y)%N+c)%N
+                                q = q*(abs(x-y))%N
+                        g = gcd(q,N)
+                        k = k + m
+                r = r*2
+        if g==N:
+                while True:
+                        ys = ((ys*ys)%N+c)%N
+                        g = gcd(abs(x-ys),N)
+                        if g>1:
+                                break
+         
+        return g  
+
+def isprime(n,PROB):
+    '''returns if the number is prime. Failure rate: 1/4**PROB '''
+    if n==2: return '1'
+    if n==1 or n&1==0:return '0'
+    s=0
+    d=n-1
+    while 1&d==0:
+        s+=1
+        d>>=1
+    for i in range(PROB):
+        a=random.randint(2,n-1)
+        composit=True
+        if pow(a,d,n)==1:
+            composit=False
+        if composit:
+            for r in xrange(0,s):
+                if pow(a,d*2**r,n)==n-1:
+                    composit=False
+                    break
+        if composit: return False
+    return True
+
+def bfactor(xx):
+    """
+    Integer factorization by Brent's algorithm.
+    """
+    out = []
+    while xx != 1:
+        tmp = brent(xx)
+        while not isprime(tmp,60):
+            tmp = brent(xx)
+        out.append(tmp)
+        xx /= tmp
+    return(out)
+from math import sqrt    
+def fib2(xx):
+	hh = sqrt(5)
+	return ( 1 / hh  ) * ( (( (1 + hh)/2 ) ** xx) - (( (1 - hh ) / 2) ** xx) )
+
+from math import log    
+    
+def pi(kk, xx):
+    """
+    Difference between actual number of primes and Prime counting function.
+    """
+    return(kk - xx / log(xx))
+
+def get_number_of_primes(kk,dd = 100):
+    """
+    Using Biscetion the number which bounds all primes upto the kk-th prime is 
+    calcualted with an accuaracy of dd.
+    """
+    bound = [kk, dd * kk]
+    while bound[1] - bound[0] > 1:
+        mid = sum(bound) / 2
+        tmp = pi(kk, mid)
+        if tmp < 0:
+            bound[1] = mid
+        else:
+            bound[0] = mid
+    return(bound[1])
